@@ -1,13 +1,13 @@
+
 import re, sys
 
 def ajusta_chave(key):
     key = key.replace('J', 'I').upper()
-    #key = ''.join(dict.fromkeys(key + "ABCDEFGHIKLMNOPQRSTUVWXYZ0123456789"))  # Remove duplicatas
-    key = ''.join(dict.fromkeys(key + "ABCDEFGHIKLMNOPQRSTUVWXYZ"))  # Remove duplicatas
-    return [key[i:i+5] for i in range(0, 25, 5)]  # Retorna uma matriz 5x5
+    key = ''.join(dict.fromkeys(key + "ABCDEFGHIKLMNOPQRSTUVWXYZ0123456789"))
+    return [key[i:i+6] for i in range(0, 36, 6)]  # Matriz 6x6
 
 def ajusta_texto(text):
-    return re.sub(r'[^A-Z ]', '', text.upper())
+    return re.sub(r'[^A-Z0-9 ]', '', text.upper())
 
 def acha_posicao(matrix, char):
     for row_idx, row in enumerate(matrix):
@@ -22,9 +22,9 @@ def decifra_par(pair, matrix):
     row2, col2 = acha_posicao(matrix, pair[1])
 
     if row1 == row2:  # Mesma linha
-        return matrix[row1][(col1 - 1) % 5] + matrix[row2][(col2 - 1) % 5]
+        return matrix[row1][(col1 - 1) % 6] + matrix[row2][(col2 - 1) % 6]
     elif col1 == col2:  # Mesma coluna
-        return matrix[(row1 - 1) % 5][col1] + matrix[(row2 - 1) % 5][col2]
+        return matrix[(row1 - 1) % 6][col1] + matrix[(row2 - 1) % 6][col2]
     else:  # Retângulo
         return matrix[row1][col2] + matrix[row2][col1]
 
@@ -36,7 +36,7 @@ def playfair_decrypt(cipher_text, key):
     i = 0
     while i < len(prepared_text):
         if prepared_text[i] == ' ':  # Preserva os espaços no texto decifrado
-            decrypted_text += ' '
+            texto_decifrado += ' '
             i += 1
             continue
         pair = prepared_text[i:i+2]
@@ -46,6 +46,10 @@ def playfair_decrypt(cipher_text, key):
             texto_decifrado += pair  # Caso reste um único caractere
         i += 2
 
+    # Remove 'X' desnecessário no final (apenas se era padding)
+    if texto_decifrado.endswith('X') and len(prepared_text.replace(' ', '')) % 2 != 0:
+        texto_decifrado = texto_decifrado[:-1]
+    
     return texto_decifrado
 
 #############################################
@@ -67,7 +71,7 @@ def main():
         
         resposta_texto_decifrado = playfair_decrypt(cipher_text, chave)
         
-        print("Texto decifrado eh: " + resposta_texto_decifrado)
+        print("Texto decifrado é: " + resposta_texto_decifrado)
     except FileNotFoundError:
         print("Arquivo de entrada não encontrado.")
         manual()

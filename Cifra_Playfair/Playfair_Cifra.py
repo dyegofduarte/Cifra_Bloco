@@ -2,11 +2,11 @@ import re, sys
 
 def ajusta_chave(key):
     key = key.replace('J', 'I').upper()
-    key = ''.join(dict.fromkeys(key + "ABCDEFGHIKLMNOPQRSTUVWXYZ"))
-    return [key[i:i+5] for i in range(0, 25, 5)]  # Retorna uma matriz 5x5
+    key = ''.join(dict.fromkeys(key + "ABCDEFGHIKLMNOPQRSTUVWXYZ0123456789"))
+    return [key[i:i+6] for i in range(0, 36, 6)]  # Matriz 6x6
 
 def ajusta_texto(text):
-    text = re.sub(r'[^A-Z ]', '', text.upper()).replace('J', 'I')
+    text = re.sub(r'[^A-Z0-9 ]', '', text.upper()).replace('J', 'I')
     prepared = ""
     i = 0
     while i < len(text):
@@ -20,9 +20,10 @@ def ajusta_texto(text):
         elif i + 1 < len(text) and text[i + 1] != ' ':
             prepared += text[i + 1]
             i += 1
-        else:
-            prepared += 'X'
         i += 1
+    # Adiciona 'X' no final apenas se necessário (se o número total de caracteres sem espaço for ímpar)
+    if len(prepared.replace(' ', '')) % 2 != 0:
+        prepared += 'X'
     return prepared
 
 def acha_posicao(matrix, char):
@@ -38,9 +39,9 @@ def cifra_par(pair, matrix):
     row2, col2 = acha_posicao(matrix, pair[1])
 
     if row1 == row2:  # Mesma linha
-        return matrix[row1][(col1 + 1) % 5] + matrix[row2][(col2 + 1) % 5]
+        return matrix[row1][(col1 + 1) % 6] + matrix[row2][(col2 + 1) % 6]
     elif col1 == col2:  # Mesma coluna
-        return matrix[(row1 + 1) % 5][col1] + matrix[(row2 + 1) % 5][col2]
+        return matrix[(row1 + 1) % 6][col1] + matrix[(row2 + 1) % 6][col2]
     else:  # Retângulo
         return matrix[row1][col2] + matrix[row2][col1]
 
@@ -61,11 +62,7 @@ def cifra_texto_playfair(plain_text, key):
         else:
             texto_cifrado += cifra_par(texto[i] + 'X', matrix)
             i += 1
-    
-    # Remove o 'X' final se ele não fizer parte da cifra
-    if texto_cifrado[-1] == 'X' and len(texto_cifrado) % 2 != 0:
-        texto_cifrado = texto_cifrado[:-1]
-    
+
     return texto_cifrado
 
 
@@ -89,7 +86,8 @@ def main():
         
         with open("TEXTO_CIFRADO.txt", 'w') as arquivo_saida:
             arquivo_saida.write(resposta_texto_cifrado)
-        
+
+        print(f"Texto cifrado: {resposta_texto_cifrado}")
         print("Texto cifrado foi salvo em TEXTO_CIFRADO.txt")
     except FileNotFoundError:
         print("Arquivo de entrada não encontrado.")
